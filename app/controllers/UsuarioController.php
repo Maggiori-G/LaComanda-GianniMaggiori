@@ -8,13 +8,17 @@ class UsuarioController extends Usuario implements IApiUsable
     {
         $parametros = $request->getParsedBody();
 
-        $usuario = $parametros['usuario'];
+        $nombre = $parametros['nombre'];
+        $email = $parametros['email'];
         $clave = $parametros['clave'];
         $rol = $parametros['rol'];
+        $estado = $parametros['estado'];
         $usr = new Usuario();
-        $usr->usuario = $usuario;
+        $usr->nombre = $nombre;
+        $usr->email = $email;
         $usr->clave = $clave;
         $usr->rol = $rol;
+        $usr->estado = $estado;
         $usr->crearUsuario();
 
         $payload = json_encode(array("mensaje" => "Usuario creado con exito"));
@@ -25,8 +29,7 @@ class UsuarioController extends Usuario implements IApiUsable
 
     public function TraerUno($request, $response, $args)
     {
-        // Buscamos usuario por nombre
-        $usr = $args['usuario'];
+        $usr = $args['nombre'];
         $usuario = Usuario::obtenerUsuario($usr);
         $payload = json_encode($usuario);
 
@@ -46,26 +49,42 @@ class UsuarioController extends Usuario implements IApiUsable
     public function ModificarUno($request, $response, $args)
     {
         $parametros = $request->getParsedBody();
-
-        $nombre = $parametros['nombre'];
-        Usuario::modificarUsuario($nombre);
-
+        $usuario = Usuario::obtenerUsuario($parametros['id']);
+        Usuario::modificarUsuario($usuario);
         $payload = json_encode(array("mensaje" => "Usuario modificado con exito"));
-
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function BorrarUno($request, $response, $args)
     {
-        $parametros = $request->getParsedBody();
-
-        $usuarioId = $parametros['usuarioId'];
-        Usuario::borrarUsuario($usuarioId);
+        
+        $usuario = Usuario::obtenerUsuario($args['id']);
+        Usuario::borrarUsuario($usuario);
 
         $payload = json_encode(array("mensaje" => "Usuario borrado con exito"));
 
         $response->getBody()->write($payload);
         return $response->withHeader('Content-Type', 'application/json');
     }
+
+    public static function Loguear($request, $response, $args){
+        $parametros = $request->getParsedBody();
+        $nombre = $parametros['nombre'];
+        $clave = $parametros['clave'];
+        $usuario = Usuario::obtenerUsuarioNombre($nombre);
+        if($usuario !== null && password_verify($clave, $usuario->clave)){
+            $token = AutentificadorJWT::CrearToken(array('id' => $usuario->id, 'rol' => $usuario->rol));
+            setcookie('jwt', $token, time()+60*60*24*30, '/', 'localhost', false, true);
+            $payload = json_encode(array('mensaje'=>'Logueo Exitoso'));
+        }
+        else{
+            $payload = json_encode(array('mensaje'=>'Datos Invalidos'));
+            
+        }
+        $response->getBody()->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    
 }

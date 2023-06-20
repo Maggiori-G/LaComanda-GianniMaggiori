@@ -14,6 +14,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 require_once './db/AccesoDatos.php';
 require_once './middlewares/AutentificadorJWT.php';
+require_once './middlewares/AutenticadorUsuarios.php';
 
 require_once './controllers/UsuarioController.php';
 require_once './controllers/ProductoController.php';
@@ -28,14 +29,42 @@ $dotenv->safeLoad();
 $app = AppFactory::create();
 
 // Add error middleware
-$app->addErrorMiddleware(true, true, true);
+$errorMiddleware = function ($request, $exception, $displayErrorDetails) use ($app) {
+    $statusCode = 500;
+    $errorMessage = $exception->getMessage();  
+    $response = $app->getResponseFactory()->createResponse($statusCode);
+    $response->getBody()->write(json_encode(['error' => $errorMessage]));
+    return $response->withHeader('Content-Type', 'application/json');
+};
+  
+$app->addErrorMiddleware(true, true, true)->setDefaultErrorHandler($errorMiddleware);
 
-
+$app->get('/admin', function (Request $request, Response $response){
+    $usuario = new Usuario();
+    $usuario->nombre = 'admin';
+    $usuario->email = 'ejemplo@gmail.com';
+    $usuario->clave = '1234';
+    $usuario->rol = 'socio';
+    $usuario->estado = 'activo';
+    $usuario->crearUsuario();
+    $response->getBody()->write('Creado super usario');
+    return $response->withHeader('Content-Type', 'application/json');
+    
+});
 // Routes
 $app->group('/usuarios', function (RouteCollectorProxy $group) {
     $group->get('[/]', \UsuarioController::class . ':TraerTodos');
-    $group->get('/{usuario}', \UsuarioController::class . ':TraerUno');
-    $group->post('[/]', \UsuarioController::class . ':CargarUno');
+    $group->get('/{id}', \UsuarioController::class . ':TraerUno')
+    ->add(\AutenticadorUsuario::class.':esSocio');
+    $group->post('[/]', \UsuarioController::class . ':CargarUno')
+    ->add(\AutenticadorUsuario::class.':ValidarCampos')
+    ->add(\AutenticadorUsuario::class.':VerificarUsuario')
+    ->add(\AutenticadorUsuario::class.':esSocio');
+    $group->put('/{id}', \UsuarioController::class . ':ModificarUno')
+    ->add(\AutenticadorUsuario::class.':ValidarCampos')
+    ->add(\AutenticadorUsuario::class.':esSocio');
+    $group->delete('/{id}', \UsuarioController::class . ':BorrarUno')
+    ->add(\AutenticadorUsuario::class.':esSocio');
 });
 
 $app->group('/productos', function (RouteCollectorProxy $group) {
@@ -50,6 +79,15 @@ $app->group('/mesas', function (RouteCollectorProxy $group) {
     $group->post('[/]', \MesaController::class.':CargarUno');
 });
 
+$app->group('/pedido', function (RouteCollectorProxy $group) {
+    $group->get('[/]', \PedidoController::class.':TraerTodos');
+    $group->get('/{pedido}', \PedidoController::class.':TraerUno');
+    $group->post('[/]', \PedidoController::class.':CargarUno');
+});
+
+$app->group('/login', function (RouteCollectorProxy $group) {
+    $group->post('[/]', \UsuarioController::class.'::Loguear');
+});
 // JWT test routes
 $app->group('/jwt', function (RouteCollectorProxy $group) {
 

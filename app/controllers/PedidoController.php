@@ -21,17 +21,19 @@ class PedidoController extends Pedido implements IApiUsable{
     
     public function CargarUno($request, $response, $args){
         $parametros = $request->getParsedBody();
-        $codigo = $parametros['codigo'];
+        $codigo = $parametros['codigoPedido'];
         $estado = $parametros['estado'];
         $importe = $parametros['importe'];
-        $orden = $parametros['orden'];
-        $cantidad = $parametros['cantidad'];
+        $idMesa = $parametros['idMesa'];
+        $idProducto = $parametros['idProducto'];
+        $nombreCliente = $parametros['nombreCliente'];
         $pedido = new Pedido();
-        $pedido->codigo = $codigo;
+        $pedido->codigoPedido = $codigo;
+        $pedido->idMesa = $idMesa;
+        $pedido->idProducto = $idProducto;
+        $pedido->nombreCliente = $nombreCliente;
         $pedido->estado = $estado;
         $pedido->importe = $importe;
-        $pedido->orden = $orden;
-        $pedido->cantidad = $cantidad;
         $pedido->crearPedido();
 
         $payload = json_encode(array("mensaje" => "Pedido creado con exito"));
@@ -42,7 +44,9 @@ class PedidoController extends Pedido implements IApiUsable{
     public function BorrarUno($request, $response, $args){
         
     }
+
     public function ModificarUno($request, $response, $args){
 
     }
+    
 }

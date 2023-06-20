@@ -15,7 +15,7 @@ class AutentificadorJWT
             'exp' => $ahora + (60000),
             'aud' => self::Aud(),
             'data' => $datos,
-            'app' => "Test JWT"
+            'app' => "LaComanda"
         );
         return JWT::encode($payload, self::$claveSecreta);
     }

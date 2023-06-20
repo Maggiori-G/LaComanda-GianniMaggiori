@@ -28,10 +28,12 @@ class ProductoController extends Producto implements IApiUsable{
         $nombre = $parametros['nombre'];
         $tipo = $parametros['tipo'];
         $precio = $parametros['precio'];
+        $tiempo = $parametros['tiempoPreparacion'];
         $prd = new Producto();
         $prd->nombre = $nombre;
         $prd->tipo = $tipo;
         $prd->precio = $precio;
+        $prd->tiempoPreparacion = $tiempo;
         $prd->crearProducto();
 
         $payload = json_encode(array("mensaje" => "Producto creado con exito"));

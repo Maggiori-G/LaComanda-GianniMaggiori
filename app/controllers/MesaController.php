@@ -23,13 +23,9 @@ class MesaController extends Mesa implements IApiUsable{
         $parametros = $request->getParsedBody();
         $codigo = $parametros['codigo'];
         $estado = $parametros['estado'];
-        $facturacion = $parametros['facturacion'];
-        $comentario = $parametros['comentario'];
         $mesa = new Mesa();
         $mesa->codigo = $codigo;
         $mesa->estado = $estado;
-        $mesa->facturacion = $facturacion;
-        $mesa->comentario = $comentario;
         $mesa->crearMesa();
 
         $payload = json_encode(array("mensaje" => "Mesa creada con exito"));

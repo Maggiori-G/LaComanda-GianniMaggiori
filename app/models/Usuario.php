@@ -21,7 +21,7 @@ class Usuario
         $consulta->bindValue(':email', $this->email, PDO::PARAM_STR);
         $consulta->bindValue(':clave', $claveHash);
         $consulta->bindValue(':rol', $this->rol, PDO::PARAM_STR);
-        $consulta->bindValue(':estado', $this->estado, PDO::PARAM_STR);
+        $consulta->bindValue(':estado', 'activo', PDO::PARAM_STR);
         $consulta->bindValue(':fechaInicio', date_format($fecha, 'Y-m-d'), PDO::PARAM_STR);
         $consulta->bindValue(':fechaFinalizacion', null, PDO::PARAM_STR);
 
@@ -49,11 +49,11 @@ class Usuario
         return $consulta->fetchObject('Usuario');
     }
 
-    public static function obtenerUsuarioNombre($nombre)
+    public static function obtenerUsuarioEmail($email)
     {
         $objAccesoDatos = AccesoDatos::obtenerInstancia();
-        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, email, clave, rol, estado, fechaInicio, fechaFinalizacion FROM usuarios WHERE nombre = :nombre");
-        $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
+        $consulta = $objAccesoDatos->prepararConsulta("SELECT id, nombre, email, clave, rol, estado, fechaInicio, fechaFinalizacion FROM usuarios WHERE email = :email");
+        $consulta->bindValue(':email', $email, PDO::PARAM_STR);
         $consulta->execute();
         
         return $consulta->fetchObject('Usuario');
@@ -84,28 +84,7 @@ class Usuario
         $consulta->execute();
     }
 
-    public static function ValidarRolUsuario($rol){
-        if($rol !== null){
-            if(empty($rol) || $rol != 'socio' && $rol != 'bartender' && $rol != 'cervecero' && $rol != 'cocinero' && $rol != 'mozo' && $rol != 'candybar' && $rol != 'cliente'){
-                return false;                
-            }
-        }
-        return true;
-    }
+    
 
-    public static function esSocio($rol){
-        if($rol !== null){
-            if(empty($rol) || $rol != 'socio'){
-                return false;                
-            }
-        }
-        return true;
-    }
-
-    public static function ValidarCamposUsuario($nombre, $email, $clave, $rol, $estado){
-        if(!empty($nombre) && !empty($email) && !empty($clave) && !empty($rol) && !empty($estado) && $nombre !== null && $email !== null && $clave !== null && $rol !== null && $estado !== null){
-            return true;
-        }
-        return false;
-    }
+    
 }
